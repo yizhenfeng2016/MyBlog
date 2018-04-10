@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block css%}
+    <link rel="stylesheet" href="{% static 'blog/css/prism.css' %}" type="text/css">
+{% endblock%}
+
+{% block main %}
+
+{% url 'blog_add_article' 0 as blog_add %}
+
+<div class="row">
+    <div id="vmaig-content" class="col-md-8 col-lg-9">
+         <div class="panel panel-info">
+             <div class="panel-heading">
+                <h3 class="panel-title">添加新文章</h3>
+             </div>
+             <div class="panel-body">
+                 <form id="add-blog-form" enctype="multipart/form-data" action="{{ blog_add }}" method="post" class="form-horizontal">
+                     {% csrf_token %}
+                      <fieldset class="module aligned first ">
+                           <div class="form-group">
+                                <label class="col-sm-2 control-label" for="id_title">标题:</label>
+                                <div class="col-sm-10">
+                                   <input class="form-control" id="id_title" maxlength="32" name="title" type="text" style="width: 50%"/>
+                                </div>
+                           </div>
+
+                           <div class="form-group">
+                                <label class="col-sm-2 control-label" for="id_content">博客正文:</label>
+                                <div class="col-sm-10">
+
+                                    <div class="django-ckeditor-widget" data-field-id="id_content" style="display: inline-block;">
+                                          <textarea cols="40" id="id_content" name="content" rows="10" data-processed="0" data-config="{&quot;filebrowserWindowWidth&quot;: 940, &quot;toolbar_Basic&quot;: [[&quot;Source&quot;, &quot;-&quot;, &quot;Bold&quot;, &quot;Italic&quot;]], &quot;language&quot;: &quot;zh-cn&quot;, &quot;toolbar_YourCustomToolbarConfig&quot;: [{&quot;items&quot;: [&quot;Styles&quot;, &quot;Format&quot;, &quot;Font&quot;, &quot;FontSize&quot;], &quot;name&quot;: &quot;styles&quot;}, {&quot;items&quot;: [&quot;TextColor&quot;, &quot;BGColor&quot;], &quot;name&quot;: &quot;colors&quot;}, {&quot;items&quot;: [&quot;Maximize&quot;, &quot;ShowBlocks&quot;, &quot;CodeSnippet&quot;], &quot;name&quot;: &quot;tools&quot;}], &quot;toolbar_Full&quot;: [[&quot;Styles&quot;, &quot;Format&quot;, &quot;Bold&quot;, &quot;Italic&quot;, &quot;Underline&quot;, &quot;Strike&quot;, &quot;SpellChecker&quot;, &quot;Undo&quot;, &quot;Redo&quot;], [&quot;Link&quot;, &quot;Unlink&quot;, &quot;Anchor&quot;], [&quot;Image&quot;, &quot;Flash&quot;, &quot;Table&quot;, &quot;HorizontalRule&quot;], [&quot;TextColor&quot;, &quot;BGColor&quot;], [&quot;Smiley&quot;, &quot;SpecialChar&quot;], [&quot;Source&quot;]], &quot;extraPlugins&quot;: &quot;codesnippet,prism&quot;, &quot;height&quot;: &quot;40%&quot;, &quot;width&quot;: &quot;90%&quot;, &quot;toolbarCanCollapse&quot;: true, &quot;skin&quot;: &quot;moono&quot;, &quot;filebrowserWindowHeight&quot;: 725, &quot;toolbar&quot;: &quot;YourCustomToolbarConfig&quot;}" data-external-plugin-resources="[]" data-id="id_content" data-type="ckeditortype"></textarea>
+                                    </div>
+                                </div>
+                           </div>
+                           <div class="form-group">
+                                <label class="col-sm-2 control-label" for="id_catagory">分类:</label>
+                                <div class="col-sm-10">
+                                       <div class="related-widget-wrapper">
+                                              <select id="id_catagory" name="catagory" style="width:40%;height: 30px">
+                                              {% if catagory %}
+                                                  {% for c in catagory %}
+                                                    <option value="{{ c.id }}">{{ c.name }}</option>
+                                                  {% endfor %}
+                                              {% else %}
+                                                  <option value="" selected="selected">---------</option>
+                                              {% endif %}
+                                              </select>
+                                              <a  id="add_id_catagory" data-toggle="modal" data-target="#add-catagory-modal"  style="padding-right:0px;cursor:pointer;">
+                                                    <img src="{% static 'admin/img/icon_addlink.gif' %}" width="10" height="10" alt="增加"/>
+                                              </a>
+                                       </div>
+                                </div>
+                           </div>
+                           <div class="form-group">
+                                <label class="col-sm-2 control-label" for="id_tags">标签:</label>
+                                <div class="col-sm-10">
+                                    <div class="related-widget-wrapper">
+                                        <select multiple="multiple" id="id_tags" name="tags" style="width:40%">
+                                            {% if tags %}
+                                                  {% for tag in tags %}
+                                                    <option value="{{ tag.id }}">{{ tag.name }}</option>
+                                                  {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                        <a  id="add_id_tags" data-toggle="modal" data-target="#add-tag-modal"  style="padding-right:0px;cursor:pointer;">
+                                            <img src="{% static 'admin/img/icon_addlink.gif' %}" width="10" height="10" alt="增加" style="margin-bottom: 50px"/>
+                                        </a>
+
+                                    </div>
+                                    <span class="help-inline">按住 ”Control“，或者Mac上的 “Command”，可以选择多个。</span>
+                                </div>
+                           </div>
+                           <div class="form-group">
+                                <div class="col-sm-offset-2 col-sm-10">
+                                     <button type="submit" class="btn btn-primary" name="save">保存</button>
+                                </div>
+                           </div>
+                      </fieldset>
+                 </form>
+             </div>
+         </div>
+    </div>
+
+    <div class="modal fade" id="add-catagory-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                       增加 catagory
+                    </h4>
+                </div>
+                <div class="modal-body clearfix">
+                    <form id="add-catagory-form" class="form-horizontal" method="post" role="form">
+                        {%csrf_token%}
+                        <div class="form-group">
+                            <label for="catagory-name" class="col-sm-2 control-label">名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="catagory-name" placeholder="请输入名称">
+
+                            </div>
+                            <div class="col-sm-offset-9" style="float: right;padding-top: 20px;padding-right: 20px;">
+                                <button id="catagory-save-button" type="submit" class="btn btn-primary">
+                                         保存
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+    <div class="modal fade" id="add-tag-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                       增加 tag
+                    </h4>
+                </div>
+                <div class="modal-body clearfix">
+                    <form id="add-tag-form" class="form-horizontal" method="post" role="form">
+                        {%csrf_token%}
+                        <div class="form-group">
+                            <label for="tag-name" class="col-sm-2 control-label">名称</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="tag-name" placeholder="请输入名称">
+
+                            </div>
+                            <div class="col-sm-offset-9" style="float: right;padding-top: 20px;padding-right: 20px;">
+                                <button id="tag-save-button" type="submit" class="btn btn-primary">
+                                         保存
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+
+
+    <div id="vmaig-side" class="col-md-4 col-lg-3 hidden-xs">
+
+{#        {% include "./blog/widgets/tags_cloud.html"%}#}
+        {% include "search.html"%}
+{#        {% include "./blog/widgets/hotest_posts.html"%}#}
+{#        {% include "./vmaig_comments/latest_comments.html"%}#}
+    </div>
+</div>
+
+<script language="javascript" type="text/javascript">
+     $.ajaxSetup({
+            data: {csrfmiddlewaretoken:'{{ csrf_token }}'},
+        });
+     $('#add-catagory-form').submit(function(){
+        $.ajax({
+            type:"POST",
+            url:"/user/addcatagory",
+            data:{"catagory_name":$("#catagory-name").val()},
+            success:function(data,textStatus){
+                var errors = data["errors"];
+                var id=data["id"];
+                var name=data["name"];
+                if(errors.length==0){
+{#                    location.reload();//刷新页面#}
+                    html="<option value=\""+id+"\">"+ name +"</option>";
+                    $("#id_catagory").append(html);
+                    $("#add-catagory-modal").modal('hide');
+                }
+                else{
+
+                    var html = "<div class=\"alert alert-danger\">"
+                    for (var key in errors){
+                        html += errors[key]+"<br/>";
+                    }
+                    html += "</div>";
+                    $("#add-catagory-modal .modal-header").after(html);
+                }
+            },
+            error:function(XMLHttpRequest, textStatus, errorThrown){
+                alert(XMLHttpRequest.responseText);
+            }
+
+        });
+        return false;
+    });
+
+    $("#catagory-save-button").click(function(){
+        $("#add-catagory-modal .alert").remove();
+    });
+
+
+    $('#add-tag-form').submit(function(){
+        $.ajax({
+            type:"POST",
+            url:"/user/addtag",
+            data:{"tag_name":$("#tag-name").val()},
+            dataType:'json',
+            success:function(data,textStatus){
+                var errors = data["errors"];
+                var id=data["id"];
+                var name=data["name"];
+                if(errors.length==0){
+{#                    location.reload();#}
+                    html="<option value=\""+id+"\">"+ name +"</option>";
+                    $("#id_tags").append(html);
+                    $("#add-tag-modal").modal("hide");
+                }
+                else{
+                    //alert(errors);
+                    var html = "<div class=\"alert alert-danger\">"
+                    for (var key in errors){
+                        html += errors[key]+"<br/>";
+                    }
+                    html += "</div>";
+                    $("#add-tag-modal .modal-header").after(html);
+                }
+
+            },
+            error:function(XMLHttpRequest, textStatus, errorThrown){
+                alert(XMLHttpRequest.responseText);
+            }
+        });
+        return false;
+    });
+
+    $("#tag-save-button").click(function(){
+        $("#add-tag-modal .alert").remove();
+    });
+
+</script>
+
+{% endblock %}
+
+{#{% block css%}#}
+{#<link type="text/css" rel="stylesheet" href="/static/syntaxhighlighter/styles/shCoreDefault.css"/>#}
+{#<style type="text/css">#}
+{#    #article {#}
+{#        font-size:14px;#}
+{#        color:#000;#}
+{#    }#}
+{##}
+{#    blockquote {#}
+{#        font-size:14px;#}
+{#    }#}
+{#</style>#}
+{#{% endblock %}#}
+
+
+{#{% block js%}#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shCore.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushCpp.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushJava.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushPython.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushXml.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushPowerShell.js"></script>#}
+{#<script type="text/javascript" src="/static/syntaxhighlighter/scripts/shBrushJScript.js"></script>#}
+{#<script type="text/javascript">SyntaxHighlighter.all();</script>#}
+{#{% endblock%}#}

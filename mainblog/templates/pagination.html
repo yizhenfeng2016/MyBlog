@@ -1,0 +1,18 @@
+<div style="color:blue;font-size: large;text-align: center;">
+    {% if blogs.has_previous %}
+    <a href="?page={{ blogs.previous_page_number }}">< 上一页</a>
+    {% endif %}
+    <span>
+    {% for p in page_range %}
+    {% ifequal p blogs.number %}
+    <span class="current">{{p}}</span>
+    {% else %}
+    <a href="?page={{p}}" title="第{{p}}页">{{p}}</a>
+    {% endifequal %}
+    {% endfor %}
+    </span>
+    {% if blogs.has_next %}
+    <a href="?page={{ blogs.next_page_number }}">下一页 > </a>
+    {% endif %}
+    <a >[第{{ blogs.number }}/{{ blogs.paginator.num_pages }}页]</a>
+</div>  

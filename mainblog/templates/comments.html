@@ -1,0 +1,209 @@
+{% load staticfiles%}
+{% url 'register-view' as register_url%}
+{% url 'login-view' as login_url%}
+<div id="anchor-quote"></div>
+<div class="well">
+    <div class="vmaig-comment">
+{#        <div class="vmaig-comment-tx">#}
+{#            {% if smarthome.img%}#}
+{#            <img src="{{smarthome.img}}" width="40"></img>#}
+{#            {%else%}#}
+{#            <img src="http://vmaig.qiniudn.com/image/tx/tx-default.jpg" width="40"></img>#}
+{#            {%endif%}#}
+{#        </div>#}
+        <div class="vmaig-comment-edit clearfix">
+            {% if user.is_authenticated %}
+                <form id="user_content" method ='post' enctype="multipart/form-data">
+                    {%csrf_token%}
+                    <textarea id="id_content" name="content" class="form-control" rows="4" placeholder="请输入评论 限200字!"></textarea>
+                    <br>
+                    <button type="submit" class="btn btn-vmaig pull-right">提交</button>
+                </form>
+            {% else %}
+               <div class="panel panel-info">
+                    <div class="panel-body" style="text-align: center">
+                        <span class="glyphicon glyphicon-user" style="font-size: 20px"></span>&nbsp;&nbsp;
+                        目前您尚未登录，请
+                        <a href="{{ login_url }}" style="color: red">登录</a>
+                            或
+                        <a href="{{ register_url }}" style="color: red">注册</a>
+                        后进行评论
+                    </div>
+               </div>
+            {% endif %}
+        </div>
+        <!--分割线-->
+        <hr style="border: 1px dashed #ccc; width: 100%;height: 0px;" />
+        <!--评论列表-->
+        <div id="comm">
+            <ul class="con" id="comment-ul">
+                {% for comment in comments %}
+                <li style="list-style-type: none;">
+                    <div class="comment">
+                        <img src="{% static comment.from_user.img %}" alt="" width="40">&nbsp;
+                        {% if comment.from_user.nickname %}
+                        {{ comment.from_user.nickname }}
+                        {% else %}
+                        {{ comment.from_user.username }}
+                        {% endif %}
+                        &nbsp;&nbsp;&nbsp;{{ comment.created|date:"Y-m-d H:i" }}
+                        <div class="col-sm-offset-1">
+                            <p style="font-size: 12px">
+                            {{ comment.content|safe }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-sm-offset-1">
+                        <div class="reply-lable">
+                            <a style="color:blue" href="#user_content" onclick="reply({{ comment.id }})">
+                            回复
+                            </a>
+                            &nbsp;&nbsp;&nbsp;
+                            <button type="button" class="btn btn-default btn-sm" data-toggle="collapse"
+                                data-target="#reply-comment-{{ comment.id }}">
+                                <span class="glyphicon glyphicon-chevron-down"></span>
+                            </button>
+                        </div>
+                        <div id="reply-comment-{{ comment.id }}" class="collapse">
+                            <ul class="replycon" id="{{ comment.id }}">
+                                {% for replycomment in replycomments %}
+                                    {% ifequal comment.id replycomment.comment_id%}
+                                        <hr style="border: 1px dashed #c9ccc7; width: 100%;height: 0px;" />
+                                        <li>
+                                            <div class="reply-comment">
+                                                <img src="{% static replycomment.from_user.img %}" alt="" width="40">&nbsp;
+                                                {% if replycomment.from_user.nickname %}
+                                                {{ replycomment.from_user.nickname }}
+                                                {% else %}
+                                                {{ replycomment.from_user.username }}
+                                                {% endif %}
+                                                &nbsp;&nbsp;&nbsp;{{ replycomment.created|date:"Y-m-d H:i" }}
+                                                <div class="col-sm-offset-1">
+                                                    <p style="font-size: 12px">&nbsp;&nbsp;
+                                                        回复
+                                                        {% if replycomment.to_user.nickname %}
+                                                        {{ replycomment.to_user.nickname }}
+                                                        {% else %}
+                                                        {{ replycomment.to_user.username }}
+                                                        {% endif %}：
+                                                        {{ replycomment.content|safe }}
+                                                    </p>
+                                                </div>
+
+                                            </div>
+                                            <div class="col-sm-offset-1">
+                                                <div class="reply-lable">
+                                                    &nbsp;&nbsp;
+                                                    <a style="color:blue" href="#user_content" onclick="reply({{comment.id}})">
+                                                    回复
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    {% endifequal %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </li>
+                    <hr style="border: 1px dashed #c9ccc7; width: 100%;height: 0px;" />
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% block submitscript %}
+    <script type="text/javascript">
+        var submitflag=true;
+        var comment_id;
+        $(function() {
+            $.ajaxSetup({
+                data: {csrfmiddlewaretoken:'{{ csrf_token }}'},
+            });
+            $('#user_content').submit(function () {
+                if (submitflag) {
+                    $.ajax({
+                        type: "post",
+                        dataType: "json",
+                        url: "/detail/{{blog.id}}/",
+                        async: false,
+                        data: {'content': $("#id_content").val(),'flag':'comment'},
+
+                        success: function (data) {
+                            var errors = data["errors"];
+
+                            if(errors.length==0) {
+                                $('#user_content')[0].reset();
+                                var newcomment = "<li>" + "<div class=\"comment\">" +
+                                        "<img src=\"{% static user.img %}\" alt=\"\" width=\"40\">"+"&nbsp;" +
+                                        data.from_user+"&nbsp;&nbsp;&nbsp;"+data.created_time+
+                                        "<div class=\"col-sm-offset-1\">"+
+                                        "<p style=\"font-size: 12px\">" + data.content + "</p>" + "</div>"+"</div>" +
+                                        "<div class=\"col-sm-offset-1\">"+
+                                        "<div class=\"reply-lable\">" +
+                                        "<a style=\"color:blue\" href=\"#user_content\" onclick=\"reply(" + data.comment_id + ")\"" + ">" +
+                                        "回复" + "</a>" + "</div>" +
+                                        "<ul class=\"replycon\" id=\"" + data.comment_id + "\">" + "</ul>" +
+                                        "</li>" + "<hr style=\"border: 1px dashed #c9ccc7; width: 100%;height: 0px;\">"+"</div>";
+                                $("#comment-ul").prepend(newcomment);
+                            }
+                            else{
+                                alert(errors);
+                            }
+                        },
+                        error: function (data) {
+                            alert(data);
+                        }
+                    });
+                    return false;
+                }
+                else{
+                    var commentid = comment_id;
+                    $.ajax({
+                        type: "post",
+                        dataType: "json",
+                        url: "/detail/{{blog.id}}/",
+                        async: false,
+                        data: {'content': $("#id_content").val(), 'flag': 'reply', 'commentid': commentid},
+
+                        success: function (data) {
+                            var errors = data["errors"];
+                            if(errors.length==0) {
+                                $('#user_content')[0].reset();
+                                var newcomment = "<hr style=\"border: 1px dashed #c9ccc7; width: 100%;height: 0px;\">" +
+                                        "<li>" + "<div class=\"reply-comment\">" +
+                                         "<img src=\"{% static user.img %}\" alt=\"\" width=\"40\">"+"&nbsp;" +
+                                        data.from_user+"&nbsp;&nbsp;&nbsp;"+data.created_time+
+                                        "<div class=\"col-sm-offset-1\">"+
+                                        "<p style=\"font-size: 12px\">" +"&nbsp;&nbsp;"+"回复"+data.to_user+"："+
+                                        data.content + "</p>" + "</div>" +"</div>"+
+                                        "<div class=\"col-sm-offset-1\">"+
+                                        "<div class=\"reply-lable\">" +"&nbsp;&nbsp;"+
+                                        "<a style=\"color:blue\" href=\"#user_content\" onclick=\"reply(" + commentid + ")\"" + ">" + "回复" + "</a>" + "</div>" +
+                                        "</li>"+"</div>";
+                                $("#" + commentid).prepend(newcomment);
+                            }
+                            else{
+                                alert(errors);
+                            }
+
+                        },
+                        error: function (data) {
+                            alert(data);
+                        }
+                    });
+                    submitflag=true;
+                    return false;
+                }
+            });
+
+        });
+
+        function reply(id)
+        {
+            submitflag=false;
+            comment_id=id;
+        }
+    </script>
+{% endblock %}

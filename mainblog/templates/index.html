@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block headtitle %}
+  我的博客
+{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div id="vmaig-content" class="col-md-8 col-lg-9">
+        <!-- 右边搜索栏 -->
+        <div class="visible-xs">
+            <div class="search">
+                <form class="form-inline clearfix" role="form" method="get" action="/search/">
+                    <input type="text" class="form-control" id="top-s" name="s">
+                    <button class="btn btn-vmaig">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+         <!-- 首页文章列表 -->
+        <div id="home-post-list">
+            <!-- 首页轮播 -->
+
+            <!--首页文章列表 -->
+
+            {% if blogs %}
+            {% with post_list=blogs.object_list %}
+            {% for post in post_list %}
+                {% include "article-list.html" %}
+            {% endfor %}
+            {% endwith %}
+            {% endif %}
+
+            <!--分页 -->
+            {% include "pagination.html"%}
+
+        </div>
+    </div>
+
+    <!-- 右边的widgets -->
+    <div id="vmaig-side" class="col-md-4 col-lg-3 hidden-xs">
+
+        {% include "search.html"%}
+
+    </div>
+
+</div>
+{% endblock %}

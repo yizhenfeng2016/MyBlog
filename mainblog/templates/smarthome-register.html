@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block headtitle %}
+  智能家居
+{% endblock %}
+
+ {% block submitscript %}
+
+ {% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div id="vmaig-content" class="col-md-8 col-lg-9">
+             <!-- 首页文章列表 -->
+            <div id="home-post-list">
+                <!--返回按键-->
+                <div class="back left" style="height: 80px;width:100%;background-color: cyan">
+                    <img src="{% static 'blog/img/smarthome/back.png' %}" onclick="back_click()" style="margin-left: 20px;margin-top:20px;width: 40px;height: 40px">
+                </div>
+                <!--用户注册-->
+                <div class="device-bind" style="height:300px;width:100%;">
+                    <form action="" method="post">
+                        手机号：<input type="text" name="tel" id="tel" style="margin-top: 20px"><br>
+                        验证码：<input type="text" name="verify" id="verify" style="margin-top: 10px"><span><button id="btn" type="button" style="margin-left: 5px">发送验证码</button></span><br>
+                        密码：<input type="text" name="pwd" id="pwd" style="margin-top: 10px;margin-left: 12px"><br>
+                        <button id="btn2" type="button" style="margin-left: 70px;margin-top: 20px;">注册</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script language="javascript" type="text/javascript">
+        $('#btn').click(function() {
+            var tel = $.trim($('#tel').val());
+            $.ajax({
+                    type: "POST",
+                    url: "/smarthome/update/getcode",
+                    data: {
+                        "phone":tel,
+                    },
+                    dataType: 'json',
+                    success: function (data, textStatus) {
+                        console.log(data);
+                        var errors = data["errors"];
+                        if (errors.length == 0) {
+                            if (data["result"] != "") {
+                                var result = JSON.parse(data["result"]);
+                                if(result.result==="success"){
+                                     console.log("get-register-code");
+                                }
+                                if(result.result==="phone_registered"){
+                                    console.log("phone_registered");
+                                    alert("该手机号已注册");
+                                }
+                            }
+                        }
+                        else {
+                            var html = "<div class=\"alert alert-danger\">";
+                            for (var key in errors) {
+                                html += errors[key] + "<br/>";
+                            }
+                            html += "</div>";
+                            $("#home-post-list").after(html);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.responseText);
+                    }
+
+                });
+        });
+
+        $('#btn2').click(function() {
+            var tel = $.trim($('#tel').val());
+            var phonecode=$.trim($('#verify').val())
+            var password=$.trim($('#pwd').val())
+            $.ajax({
+                    type: "POST",
+                    url: "/smarthome/update/register",
+                    data: {
+                        "phone":tel,
+                        "phonecode":phonecode,
+                        "password":password
+                    },
+                    dataType: 'json',
+                    success: function (data, textStatus) {
+                        console.log(data);
+                        var errors = data["errors"];
+                        if (errors.length == 0) {
+                            if (data["result"] != "") {
+                                var result = JSON.parse(data["result"]);
+                                if(result.result==="success"){
+                                     alert("注册成功！");
+                                     window.location.href='http://'+window.location.host+'/smarthome/login/';
+
+                                }
+                                if(result.result==="phonecode_error"){
+                                    alert("验证码错误！");
+                                }
+
+                            }
+                        }
+                        else {
+                            var html = "<div class=\"alert alert-danger\">";
+                            for (var key in errors) {
+                                html += errors[key] + "<br/>";
+                            }
+                            html += "</div>";
+                            $("#home-post-list").after(html);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.responseText);
+                    }
+
+                });
+        });
+
+
+        function back_click(){
+            window.location.href='http://'+window.location.host+'/smarthome/login/';
+        }
+
+
+    </script>
+{% endblock %}

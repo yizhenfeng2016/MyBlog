@@ -1,0 +1,74 @@
+<div id="send_message" class="well clearfix">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">发送私信</h3>
+        </div>
+        <div class="panel-body">
+            <form id="send-private-message" class="form-horizontal" role="form" method="post">
+                {% csrf_token %}
+                  <div class="form-group">
+                    <label for="to_user" class="col-sm-2 control-label">收件人：</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="to_user" placeholder="请输入收件人名称">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="message_title" class="col-sm-2 control-label">标题：</label>
+                    <div class="col-sm-10">
+                      <input type="text" class="form-control" id="message_title" placeholder="请输入标题">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="message_text" class="col-sm-2 control-label">内容：</label>
+                    <div class="col-sm-10">
+                        <textarea id="message_text" name="message_text" class="form-control" rows="5" placeholder="请输入内容 限500字!"></textarea>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                      <button type="submit" class="btn btn-default">发送</button>
+                    </div>
+                  </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script language="javascript" type="text/javascript">
+    $.ajaxSetup({
+            data: {csrfmiddlewaretoken:'{{ csrf_token }}'},
+        });
+    $('#send-private-message').submit(function () {
+        $.ajax({
+            type: "POST",
+            url: "/user/sendmessage",
+            data: {
+                "to_user":$('#to_user').val(),
+                "message_title":$('#message_title').val(),
+                "message_text":$('#message_text').val()
+            },
+            dataType: 'json',
+            success:function(data,textStatus){
+                $('#send-private-message')[0].reset();
+                var errors = data["errors"];
+                if(errors.length==0){
+                    location.reload();
+                }
+                else{
+                    var html = "<div class=\"alert alert-danger\">"
+                    for (var key in errors){
+                        html += errors[key]+"<br/>";
+                    }
+                    html += "</div>";
+                    $("#send_message .message-title").after(html);
+                }
+            },
+            error:function(XMLHttpRequest, textStatus, errorThrown){
+                alert(XMLHttpRequest.responseText);
+            }
+
+        });
+        return false;
+    });
+
+</script>

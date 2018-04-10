@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="{% static 'blog/js/swiper.min.js' %}"></script> <!--图片滑动-->
+</head>
+<body>
+    <div class="swiper-container"  id="swiper_header">
+
+        <div class="swiper-wrapper" v-model="active">
+            <div class="swiper-slide">Slide 1</div>
+            <div class="swiper-slide">Slide 2</div>
+            <div class="swiper-slide">Slide 3</div>
+            <div class="swiper-slide">Slide 4</div>
+            <div class="swiper-slide">Slide 5</div>
+            <div class="swiper-slide">Slide 6</div>
+            <div class="swiper-slide">Slide 7</div>
+            <div class="swiper-slide">Slide 8</div>
+
+
+        </div>
+     </div>
+
+    <div class="swiper-container "  id="swiper_content">
+
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">Slide 1</div>
+            <div class="swiper-slide">Slide 2</div>
+            <div class="swiper-slide">Slide 3</div>
+            <div class="swiper-slide">Slide 4</div>
+            <div class="swiper-slide">Slide 5</div>
+            <div class="swiper-slide">Slide 6</div>
+            <div class="swiper-slide">Slide 7</div>
+            <div class="swiper-slide">Slide 8</div>
+
+            </div>
+    </div>
+
+    <script type="text/javascript">
+        {
+
+      var header = new Swiper('#swiper_header',{
+        watchSlidesProgress : true,
+        watchSlidesVisibility : true,
+        slidesPerView :'auto',
+        onTap: function(){
+          content.slideTo( header.clickedIndex)
+        }
+      })
+      var content = new Swiper('#swiper_content',{
+        longSwipesRatio : 0.1,
+        onSlideChangeStart: function(){
+          updateNavPosition()
+        }
+      })
+
+      function updateNavPosition(){
+        $('.mint-tab-item.is-selected').removeClass('is-selected ')
+        var activeNav = $('.mint-tab-item').eq(content.activeIndex).addClass('is-selected ');
+          if (!activeNav.hasClass('swiper-slide-visible')) {
+              console.log(1);
+              if (activeNav.index()>header.activeIndex) {
+                  console.log(2);
+                  var thumbsPerNav = Math.floor(header.width/(activeNav.width()*2.5))-1
+                  header.slideTo(activeNav.index()-thumbsPerNav)
+                  console.log(thumbsPerNav);
+              }
+              else {
+                  console.log(3);
+                  header.slideTo(activeNav.index())
+              }
+          }
+      }
+    }
+    </script>
+</body>
+</html>

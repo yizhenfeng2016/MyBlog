@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block headtitle %}
+  {{ blog.title}}
+{% endblock %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static 'blog/css/prism.css' %}" type="text/css">
+{% endblock%}
+
+{% block main %}
+
+{% url 'get_user_blogs' as home_url %}
+{% url 'blog_modify_article' blog.id as article_modify %}
+<div class="row">
+    <div id="vmaig-content" class="col-md-8 col-lg-9">
+        <div id="article-page" class="well" style="padding-bottom: 30px">
+            <ol class="breadcrumb">
+                <li><a href="{{ home_url }}"><span class="glyphicon glyphicon-home"></span></a></li>
+                <li><a href="/">{{ blog.catagory.name}}</a></li>
+                <li class="hidden-xs"><a><span class="glyphicon glyphicon-calendar"></span> {{blog.created|date:"Y-m-d"}}</a></li>
+                <li><a>
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                    {{count.readed}}
+                </a></li>
+                <li><a>
+                    <span class="glyphicon glyphicon-comment"></span>
+                    {{count.commented}}
+                </a></li>
+
+                <li class="pull-right hidden-xs"><a>
+                    <span class="glyphicon glyphicon-user"></span> {{blog.author}}
+                </a></li>
+            </ol>
+
+            <div id="article">
+                <div class="article-title">
+                    <h1>{{blog.title}}</h1>
+                </div>
+                <div class="article-tags">
+                    {% for tag in tags%}
+                    <a href="/">
+                        <span class="label label-vmaig-2 btn">{{tag.name}}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                <hr/>
+                <div class="article-content">
+                    {% autoescape off%}
+                    {{blog.content}}
+                    {% endautoescape %}
+                </div>
+                <hr style="margin-bottom: 5px">
+                <div style="float: right;">
+                    <span>
+                        <span class="glyphicon glyphicon-calendar"></span>
+                        {{blog.created|date:"Y-m-d" }}
+                    </span>
+                    <a href="{{ article_modify }}">/&nbsp;编辑</a>
+                </div>
+            </div>
+        </div>
+
+        <!--评论框 -->
+        {% include "comments.html"%}
+
+    </div>
+
+    <div id="vmaig-side" class="col-md-4 col-lg-3 hidden-xs">
+
+{#        {% include "./blog/widgets/tags_cloud.html"%}#}
+        {% include "search.html"%}
+{#        {% include "./blog/widgets/hotest_posts.html"%}#}
+{#        {% include "./vmaig_comments/latest_comments.html"%}#}
+    </div>
+</div>
+{% endblock %}
+

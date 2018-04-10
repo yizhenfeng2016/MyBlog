@@ -1,0 +1,616 @@
+{% extends "base.html" %}
+{% load staticfiles%}
+{% block headtitle %}
+  智能家居
+{% endblock %}
+
+{% block css%}
+    <link rel="stylesheet" href="{% static 'blog/css/smarthome-control.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'blog/css/smarthome-style.css' %}" type="text/css">
+    <link rel="stylesheet" href="{% static 'blog/css/swiper.min.css' %}" type="text/css">
+{% endblock%}
+
+{% block submitscript %}
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/rollups/aes.js' %}"></script> <!--aes加解密-->
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/enc-base64.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/mode-ecb.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/pad-zeropadding.js' %}"></script>
+     <script type="text/javascript" src="{% static 'blog/js/smarthome/utils.js' %}" charset="gb2312"></script>
+     <script src="{% static 'blog/js/swiper.min.js' %}"></script> <!--图片滑动-->
+     <script type="text/javascript" src="{% static 'blog/js/smarthome/jquery.gesture.password.js' %}"></script><!--手势密码-->
+     <script type="text/javascript">
+     </script>
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div id="vmaig-content" class="col-md-8 col-lg-9">
+            <!--手势密码-->
+            <div id="gesturepwd_window">
+                <a href="javascript:hide()" style="float: right">
+                    <img src="{% static 'blog/img/smarthome/gesturepwd_close.png' %}" style="width: 40px;height: 40px;">
+                </a>
+                <div id="gesturepwd" style="margin-top: 10px;margin-left: 30px"></div>
+            </div>
+            <div id="over"></div>
+            <div class="back-safety-main" style="height: 100px;width:100%;background-color: cyan;">
+                <!--返回按键-->
+                <div class="back left" style="width:40%;float:left">
+                    <img src="{% static 'blog/img/smarthome/back.png' %}" onclick="back_click()" style="float: left;margin-left: 20px;margin-top:20px;width: 40px;height: 40px">
+                </div>
+                <!--布防模式-->
+                <div class="dropdown right" style="height: 100px;width:40%;float:right;">
+                     <div class="safety_icon" id="dropdownmenu_safety" data-toggle="dropdown" style="height: 100px;">
+                         <img src="{% static 'blog/img/smarthome/safety_home.png' %}" style="float: right;margin-right: 20px;margin-top:20px;width: 50px;height: 50px">
+                     </div>
+                     <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="dropdownmenu_safety" style="background-image:url({% static 'blog/img/smarthome/safety_bj.9.png' %});background-repeat: no-repeat;background-position: center;
+                             background-size:100% 100%;-moz-background-size:100% 100%;background-color:transparent;border:0px;padding:20px 0">
+                        <li>
+                            <a href="javascript:void(0);" onclick="safety_click(this)" name="home">
+                                <img src="{% static 'blog/img/smarthome/safety_home.png' %}" style="width: 50px;height: 50px">
+                                &nbsp;&nbsp;&nbsp;在家
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="javascript:void(0);" onclick="safety_click(this)" name="out">
+                                <img src="{% static 'blog/img/smarthome/safety_out.png' %}" style="width: 50px;height: 50px">
+                                &nbsp;&nbsp;&nbsp;外出
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="javascript:void(0);" onclick="safety_click(this)" name="sleep">
+                                <img src="{% static 'blog/img/smarthome/safety_sleep.png' %}" style="width: 50px;height: 50px">
+                                &nbsp;&nbsp;&nbsp;就寝
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="javascript:void(0);" class="bounceInUp disarm" onclick="safety_click(this)" name="disarm">
+                                <img src="{% static 'blog/img/smarthome/safety_disarm.png' %}" style="width: 50px;height: 50px">
+                                &nbsp;&nbsp;&nbsp;撤防
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+             <!-- 场景和设备列表 -->
+            <div id="home-post-list">
+                <!-- 场景列表 -->
+                <div class="scene_box">
+                    <div class="swiper-container scene" id='swiper_ss'>
+                        <div class="swiper-wrapper">
+                        </div>
+                        <div class="swiper-pagination scene"></div>
+{#                        <div class="swiper-button-prev"></div>#}
+{#                        <div class="swiper-button-next"></div>#}
+                    </div>
+                </div>
+
+                <!-- 房间列表 -->
+                <div class="swiper-container room" id='swiper_menu' style="height: 40px;background-color: white">
+                    <!--顶部导航-->
+                    <div class="swiper-wrapper" style="color: black;font-size: 15px">
+                    </div>
+                    <div class="swiper-pagination room"></div>
+                </div>
+                <!-- 设备列表 -->
+                <div class="swiper-container device" id="swiper_device">
+                    <div class="swiper-wrapper">
+                    </div>
+                    <div class="swiper-pagination device"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script language="javascript" type="text/javascript">
+        window.onload = function() {
+            var combs_json = JSON.parse(window.localStorage["combs"]);
+            var rooms_json = JSON.parse(window.localStorage["rooms"]);
+            var devices_json = JSON.parse(window.localStorage["devices"]);
+            var combs = combs_json.combs;
+            var rooms = rooms_json.rooms;
+            var devices = devices_json.devices;
+{#            console.log(combs);#}
+            combs_html = "";
+            for (var i = 0; i < combs.length; i++) {
+                var html = "<div class=\"swiper-slide\">" + "<div class=\"a-img2\" mode=\"" + combs[i].security_mode + "\" name=\"" + combs[i].control_name + "\" onclick=\"combs_click(this)\" style=\"margin-left:20px\">";
+                var h01="<canvas class=\"canvas_loader\" width=\"80\" height=\"80\" style=\"background-image:";
+                var h02=";background-repeat: no-repeat;background-position: center;background-size: contain;margin-left:10px;\">"+"</canvas>";
+                var h1;
+                switch (combs[i].scene_image) {
+                    case "welcome":
+                        h1 = "url({% static 'blog/img/smarthome/scene_welcome_c.png' %})";
+                        break;
+                    case "leave":
+                        h1 = "url({% static 'blog/img/smarthome/scene_leave_c.png' %})";
+                        break;
+                    case "thereception":
+                        h1 = "url({% static 'blog/img/smarthome/scene_theteception_c.png' %})";
+                        break;
+                    case "eat":
+                        h1 = "url({% static 'blog/img/smarthome/scene_eating_c.png' %})";
+                        break;
+                    case "cinema":
+                        h1 = "url({% static 'blog/img/smarthome/scene_cinema_c.png' %})";
+                        break;
+                    case "sleep":
+                        h1 = "url({% static 'blog/img/smarthome/scene_sleep_c.png' %})";
+                        break;
+                    case "study":
+                        h1 = "url({% static 'blog/img/smarthome/scene_study_c.png' %})";
+                        break;
+                    case "entertainment":
+                        h1 = "url({% static 'blog/img/smarthome/scene_entertainment_c.png' %})";
+                        break;
+                    default :
+                        h1 = "url({% static 'blog/img/smarthome/scene_default_c.png' %})";
+                }
+                h1=h01+h1+h02;
+                var h2 = "<div class=\"a_itm_text2\" style=\"text-align:center\">" + combs[i].control_name + "</div>" + "</div>" + "</div>";
+                combs_html = combs_html + html + h1 + h2;
+            }
+            console.log(combs_html);
+            $("#swiper_ss .swiper-wrapper").append(combs_html);
+            var scene_swiper = $('.scene').swiper({
+                slidesPerView: "3",  //默认页面显示多少个
+{#                nextButton: '.swiper-button-next',#}
+{#                prevButton: '.swiper-button-prev'#}
+            })
+
+            var rooms_html="<div class=\"swiper-slide swiper-room-active\" name=\"room\" id=\"all_click\" style=\"margin-left:15px;\">"+"我的设备"+"</div>";
+            for(var i=0;i<rooms.length;i++){
+                var html="<div class=\"swiper-slide\" name=\"room\">"+rooms[i].room_name+"</div>";
+                rooms_html=rooms_html+html;
+            }
+            console.log(rooms_html);
+            $("#swiper_menu .swiper-wrapper").append(rooms_html);
+            var room_swiper = $('.room').swiper({
+                slidesPerView: "5",  //默认页面显示多少个
+                //slideActiveClass:"swiper-room-active",
+                onClick:function(swiper){
+                    var index=swiper.clickedIndex;
+                    //console.log(index);
+                    set_ActiveClass(index);
+                    device_swiper.slideTo(index);
+                }
+            })
+
+            function set_ActiveClass(i){
+                $("div[name='room']").each(function(index,el){
+                            //console.log("set-activeclass");
+                            if(index!=i){
+                                if($(el).hasClass("swiper-room-active")){
+                                    console.log("remove",index);
+                                    //console.log($(el));
+                                    $(el).removeClass("swiper-room-active");
+                                    //console.log($(el));
+                                }
+                            }
+                            else{
+                                console.log("add",index);
+                                //console.log($(el));
+                                $(el).addClass("swiper-room-active");
+                                //console.log($(el));
+                            }
+                        }
+                );
+            }
+
+            var devices_html=""
+
+            var class_array=new Array("开关","窗帘");
+            var class_devices={};
+            var class_count={};
+            for(var i=0;i<class_array.length;i++) {
+                var count=0;
+                var array=new Array();
+                for (var j = 0; j < devices.length; j++) {
+                    if (devices[j].dev_class_name === class_array[i]) {
+                        count = count + 1;
+                        array.push(devices[j]);
+                    }
+                }
+                class_devices[class_array[i]]=array;
+                class_count[class_array[i]]=count;
+            }
+            console.log(class_count);
+            console.log(class_devices);
+            var rooms_devices={};
+            for(var i=0;i<rooms.length;i++){
+                var array=new Array();
+                for(var j=0;j<devices.length;j++){
+                    if(devices[j].room_name===rooms[i].room_name){
+                        array.push(devices[j]);
+                    }
+                }
+                rooms_devices[rooms[i].room_name]=array;
+            }
+            console.log(rooms_devices);
+
+            var class_html="";
+            <!--我的设备-->
+            var all_device_h="<div class=\"swiper-slide active swiper-slide-visible swiper-slide-active\">" +
+                                "<div class=\"page-inner\">" +
+                                    "<div class=\"tabs_box\">" +
+                                        "<div class=\"scene_main\">" ;
+            for(var i=0;i<class_array.length;i++){
+                <!--每一类设备-->
+                if(class_count[class_array[i]]>0) {
+                    var h1 = "<div class=\"scene_item_nav\" flagname=\"closed\" onclick=\"class_click(this)\">" +
+                                "<img src=\"{% static 'blog/img/smarthome/icon_arrow_02.png' %}\" style=\"display:inline-block;vertical-align:middle;width:30px;height:30px;\">"+
+                                "<a href=\"javascript:;\" style=\"display:inline-block;vertical-align:middle\" > " + class_array[i] + "  (" + class_count[class_array[i]] + ")" + "</a>" +
+                            "</div>";
+                    var h2 = "<div class=\"hide_list\">";
+                    <!--每一类设备列表-->
+                    var dev_array=class_devices[class_array[i]];
+
+                    for(var j=0;j<dev_array.length;j++){
+                        var device_id=dev_array[j].room_name+','+dev_array[j].dev_name;
+                        console.log(device_id);
+                        if(dev_array[j].dev_class_type==="light"&&class_array[i]==="开关"){
+                            var h3="<div class=\"scene_item\" deviceid=\""+device_id+"\">"+
+                                        "<div class=\"scene_item_l img_light_state\">"+
+                                            "<img src=\"{% static 'blog/img/smarthome/shebei_light_off.png' %}\">"+
+                                        "</div>"+
+                                        "<div class=\"scene_item_r\">"+
+                                            "<div class=\"scene_item_r_t\">"+
+                                                "<p class=\"blod scene_title\">"+
+                                                    dev_array[j].dev_name+
+                                                "</p>"+
+                                                 "<p class=\"gray device_room\">"+
+                                                    dev_array[j].room_name+
+                                                "</p>"+
+                                                "<p class=\"gray light_state\">"+
+                                                    "已关闭"+
+                                                "</p>"+
+                                            "</div>"+
+                                            "<div class=\"scene_item_r_b\">"+
+                                                "<div class=\"kai_box light_control\">"+
+                                                    "<a href=\"javascript:;\" class=\"switch_off\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"light_click(this)\"></a>"+
+                                                "</div>"+
+                                            "</div>"+
+                                        "</div>"+
+                                        "<div class=\"clear\">"+"</div>"+
+                                    "</div>";
+                            h2=h2+h3;
+                        }
+                        if(dev_array[j].dev_class_type==="curtain"&&class_array[i]==="窗帘"){
+                            var h3="<div class=\"scene_item\" deviceid=\""+device_id+"\">"+
+                                        "<div class=\"scene_item_l img_curtain_state\">"+
+                                            "<img src=\"{% static 'blog/img/smarthome/shebei_curtain_open.png' %}\">"+
+                                        "</div>"+
+                                        "<div class=\"scene_item_r\">"+
+                                            "<div class=\"scene_item_r_t\">"+
+                                                "<p class=\"blod scene_title\">"+
+                                                    dev_array[j].dev_name+
+                                                "</p>"+
+                                                 "<p class=\"gray device_room\">"+
+                                                    dev_array[j].room_name+
+                                                "</p>"+
+                                                "<p class=\"gray curtain_state\">"+
+                                                    "暂停"+
+                                                "</p>"+
+                                            "</div>"+
+                                            "<div class=\"scene_item_r_b\">"+
+                                                "<div class=\"kai_box curtain_control\">"+
+                                                    "<a href=\"javascript:;\" class=\"curtain_open_n\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                     "<a href=\"javascript:;\" class=\"curtain_stop_c\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                    "<a href=\"javascript:;\" class=\"curtain_close_n\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                "</div>"+
+
+                                            "</div>"+
+                                        "</div>"+
+                                        "<div class=\"clear\">"+"</div>"+
+                                    "</div>";
+                            h2=h2+h3;
+                        }
+                    }
+                    h2=h2+"</div>";
+                    h1=h1+h2;
+                    all_device_h=all_device_h+h1;
+                }
+            }
+            all_device_h=all_device_h+"</div>"+"</div>"+"</div>"+"</div>";
+            console.log(all_device_h);
+
+            <!--每一个房间的设备列表-->
+            var rooms_device_h="";//所有房间的html
+            for(var i=0;i<rooms.length;i++){
+                var room_device_h="<div class=\"swiper-slide\">" +
+                                "<div class=\"page-inner\">" +
+                                    "<div class=\"tabs_box\">" +
+                                        "<div class=\"scene_main\">" ;
+                var room_device_h_end="</div>"+"</div>"+"</div>"+"</div>";
+                if(rooms_devices[rooms[i].room_name].length>0){
+                    <!--每一个房间-->
+                    var dev_array=rooms_devices[rooms[i].room_name];
+                    var h2="";
+                    for(var j=0;j<dev_array.length;j++){
+                        var device_id=dev_array[j].room_name+','+dev_array[j].dev_name;
+                        console.log(device_id);
+                        if(dev_array[j].dev_class_type==="light"){
+                            var h3="<div class=\"scene_item\" deviceid=\""+device_id+"\">"+
+                                        "<div class=\"scene_item_l img_light_state\">"+
+                                            "<img src=\"{% static 'blog/img/smarthome/shebei_light_off.png' %}\">"+
+                                        "</div>"+
+                                        "<div class=\"scene_item_r\">"+
+                                            "<div class=\"scene_item_r_t\">"+
+                                                "<p class=\"blod scene_title\">"+
+                                                    dev_array[j].dev_name+
+                                                "</p>"+
+                                                 "<p class=\"gray device_room\">"+
+                                                    dev_array[j].room_name+
+                                                "</p>"+
+                                                "<p class=\"gray light_state\">"+
+                                                    "已关闭"+
+                                                "</p>"+
+                                            "</div>"+
+                                            "<div class=\"scene_item_r_b\">"+
+                                                "<div class=\"kai_box light_control\">"+
+                                                    "<a href=\"javascript:;\" class=\"switch_off\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"light_click(this)\"></a>"+
+                                                "</div>"+
+                                            "</div>"+
+                                        "</div>"+
+                                        "<div class=\"clear\">"+"</div>"+
+                                    "</div>";
+                            h2=h2+h3;
+                        }
+                        if(dev_array[j].dev_class_type==="curtain"){
+                            var h3="<div class=\"scene_item\" deviceid=\""+device_id+"\">"+
+                                        "<div class=\"scene_item_l img_curtain_state\">"+
+                                            "<img src=\"{% static 'blog/img/smarthome/shebei_curtain_open.png' %}\">"+
+                                        "</div>"+
+                                        "<div class=\"scene_item_r\">"+
+                                            "<div class=\"scene_item_r_t\">"+
+                                                "<p class=\"blod scene_title\">"+
+                                                    dev_array[j].dev_name+
+                                                "</p>"+
+                                                 "<p class=\"gray device_room\">"+
+                                                    dev_array[j].room_name+
+                                                "</p>"+
+                                                "<p class=\"gray curtain_state\">"+
+                                                    "暂停"+
+                                                "</p>"+
+                                            "</div>"+
+                                            "<div class=\"scene_item_r_b\">"+
+                                                "<div class=\"kai_box curtain_control\">"+
+                                                    "<a href=\"javascript:;\" class=\"curtain_open_n\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                     "<a href=\"javascript:;\" class=\"curtain_stop_c\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                    "<a href=\"javascript:;\" class=\"curtain_close_n\" roomname=\""+dev_array[j].room_name+"\" "+"devicename=\""+dev_array[j].dev_name+"\" "+"onclick=\"curtain_click(this)\"></a>"+
+                                                "</div>"+
+
+                                            "</div>"+
+                                        "</div>"+
+                                        "<div class=\"clear\">"+"</div>"+
+                                    "</div>";
+                            h2=h2+h3;
+                        }
+                    }
+
+                    rooms_device_h=rooms_device_h+room_device_h+h2+room_device_h_end;
+
+                }
+                else{
+                    rooms_device_h=rooms_device_h+room_device_h+room_device_h_end;
+                }
+            }
+
+            var all_h=all_device_h+rooms_device_h;
+            $("#swiper_device .swiper-wrapper").append(all_h);
+            var device_swiper = $('.device').swiper({
+                slidesPerView: 1,  //默认页面显示多少个
+                onSlideChangeStart:function(swiper){
+                    var index=swiper.activeIndex;
+                    console.log(index);
+                    set_ActiveClass(index);
+                    room_swiper.slideTo(index);
+                }
+            })
+
+            $(".scene_main .hide_list").hide();
+        }
+
+        function back_click(){
+            window.location.href='http://'+window.location.host+'/smarthome/';
+        }
+
+        function class_click(obj){
+            console.log($(obj).attr('flagname'));
+            if($(obj).attr('flagname')==="closed"){
+                $(obj).find('img').attr("src","{% static 'blog/img/smarthome/icon_arrow_01.png' %}");
+                $(obj).next().show();
+                $(obj).attr('flagname',"opened");
+            }
+            else{
+                $(obj).find('img').attr("src","{% static 'blog/img/smarthome/icon_arrow_02.png' %}");
+                $(obj).next().hide();
+                $(obj).attr('flagname',"closed");
+            }
+        }
+
+        function light_click(obj) {
+            console.log($(obj).attr('class'));
+            console.log($(obj).attr('roomname'));
+            console.log($(obj).attr('devicename'));
+            var fun_command="";
+            if($(obj).attr('class')==="switch_off"){
+                fun_command="on";
+            }
+            else{
+                fun_command="off";
+            }
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/light",
+                data:{"token":window.localStorage["text"],"from_username":window.localStorage["mac"],"username":window.localStorage["user"],
+                    "room_name":$(obj).attr('roomname'),
+                    "dev_name":$(obj).attr('devicename'),
+                    "fun_command":fun_command
+                },
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        console.log(data["result"]);
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+         function curtain_click(obj) {
+            console.log($(obj).attr('class'));
+            console.log($(obj).attr('roomname'));
+            console.log($(obj).attr('devicename'));
+            var fun_command="";
+            if($(obj).attr('class')==="curtain_open_n"||$(obj).attr('class')==="curtain_open_c"){
+                fun_command="open";
+            }
+            else if($(obj).attr('class')==="curtain_close_n"||$(obj).attr('class')==="curtain_close_c"){
+                fun_command="close";
+            }
+            else{
+                fun_command="stop";
+            }
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/curtain",
+                data:{"token":window.localStorage["text"],"from_username":window.localStorage["mac"],"username":window.localStorage["user"],
+                    "room_name":$(obj).attr('roomname'),
+                    "dev_name":$(obj).attr('devicename'),
+                    "fun_command":fun_command
+                },
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        console.log(data["result"]);
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        function combs_click(obj) {
+            console.log($(obj).attr('name'));
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/scene",
+                data:{"token":window.localStorage["text"],"from_username":window.localStorage["mac"],"username":window.localStorage["user"],"control_name":$(obj).attr('name')},
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        console.log(data["result"]);
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        $("#gesturepwd").GesturePasswd({
+            backgroundColor:"#252736",  //背景色
+            color:"#FFFFFF",   //主要的控件颜色
+            roundRadii:25,    //大圆点的半径
+            pointRadii:6, //大圆点被选中时显示的圆心的半径
+            space:30,  //大圆点之间的间隙
+            width:240,   //整个组件的宽度
+            height:240,  //整个组件的高度
+            lineColor:"#00aec7",   //用户划出线条的颜色
+            zindex :100, //整个组件的css z-index属性
+            });
+        $("#gesturepwd").on("hasPasswd",function(e,passwd){
+            var result;
+            safety_send("disarm",passwd);
+            if(result == true){
+                $("#gesturepwd").trigger("passwdRight");
+                setTimeout(function(){
+                //密码验证正确后的其他操作，打开新的页面等。。。
+                alert("密码正确！")
+                },500);  //延迟半秒以照顾视觉效果
+            }
+            else{
+                  $("#gesturepwd").trigger("passwdWrong");
+                  //密码验证错误后的其他操作。。。
+            }
+        });
+
+
+        var gesturepwd_window = document.getElementById('gesturepwd_window');
+        var over = document.getElementById('over');
+        function show_gesturepwd()
+        {
+            gesturepwd_window.style.display = "block";
+            over.style.display = "block";
+        }
+        function hide()
+        {
+            gesturepwd_window.style.display = "none";
+            over.style.display = "none";
+        }
+
+        function safety_send(name,password){
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/safety",
+                data:{"token":window.localStorage["text"],"from_username":window.localStorage["mac"],"username":window.localStorage["user"],
+                    "security_mode":name,"password":password
+                },
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        console.log(data["result"]);
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        function safety_click(obj){
+            console.log($(obj).attr('name'));
+            var password="";
+            var safety_name=$(obj).attr('name');
+
+            if(safety_name==="disarm"){
+                show_gesturepwd();
+            }
+            else{
+                safety_send(safety_name,password);
+            }
+        }
+
+
+    </script>
+{% endblock %}

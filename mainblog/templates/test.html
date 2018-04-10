@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block headtitle %}
+  智能家居
+{% endblock %}
+
+{% block css%}
+    <link rel="stylesheet" href="/static/blog/css/swiper.min.css" type="text/css">
+{% endblock%}
+
+{% block submitscript %}
+     <script src="/static/blog/js/swiper.min.js"></script> <!--图片滑动-->
+     <script type="text/javascript">
+     </script>
+{% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div id="vmaig-content" class="col-md-8 col-lg-9">
+            <!-- 右边搜索栏 -->
+            <div class="visible-xs">
+                <div class="search">
+                    <form class="form-inline clearfix" role="form" method="get" action="/search/">
+                        <input type="text" class="form-control" id="top-s" name="s">
+                        <button class="btn btn-vmaig">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+             <!-- 场景和设备列表 -->
+            <div id="home-post-list">
+                <!-- 场景列表 -->
+                <div class="scene_box">
+                    <div class="swiper-container" id='swiper_ss'>
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide"><div class="a-img2" mode="home" name="回家"><img src="/static/blog/img/smarthome/image_backhome.png"><div class="a_itm_text2">回家</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="out" name="离家"><img src="/static/blog/img/smarthome/image_leavehome.png"><div class="a_itm_text2">离家</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="会客"><img src="/static/blog/img/smarthome/image_receiveguest.png"><div class="a_itm_text2">会客</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="用餐"><img src="/static/blog/img/smarthome/image_repast.png"><div class="a_itm_text2">用餐</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="sleep" name="就寝"><img src="/static/blog/img/smarthome/image_sleep.png"><div class="a_itm_text2">就寝</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="影院"><img src="/static/blog/img/smarthome/image_cinema.png"><div class="a_itm_text2">影院</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="阅读"><img src="/static/blog/img/smarthome/image_study.png"><div class="a_itm_text2">阅读</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="a"><img src="/static/blog/img/smarthome/image_backhome.png"><div class="a_itm_text2">a</div></div></div>
+                            <div class="swiper-slide"><div class="a-img2" mode="" name="1"><img src="/static/blog/img/smarthome/image_backhome.png"><div class="a_itm_text2">1</div></div></div>
+                        </div>
+
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-button-next"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右边的widgets -->
+        <div id="vmaig-side" class="col-md-4 col-lg-3 hidden-xs">
+
+            {% include "search.html"%}
+
+        </div>
+    </div>
+
+    <script language="javascript" type="text/javascript">
+        window.onload = function() {
+            var mySwiper = new Swiper('.swiper-container', {
+                slidesPerView: 5,  //默认页面显示多少个
+                nextButton: '.swiper-button-next',
+                prevButton: '.swiper-button-prev'
+            })
+        }
+    </script>
+{% endblock %}

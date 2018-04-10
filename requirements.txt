@@ -1,0 +1,7 @@
+Django==1.8.17
+django-suit==0.2.25
+django-ckeditor==5.4.0
+requests==2.18.4
+M2Crypto==0.29.0
+Pillow==5.1.0
+python-memcached==1.59

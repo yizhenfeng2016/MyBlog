@@ -1,0 +1,96 @@
+
+<div id="notification" class="well clearfix">
+    <ul id="myTab" class="nav nav-tabs">
+        <li class="active"><a class="notification-title-tab" href="#notification-title" data-toggle="tab">
+                消息通知</a>
+        </li>
+    </ul>
+    <div id="myTabContent" class="tab-content">
+        <div class="tab-pane fade in active" id="notification-title">
+            <table id="result_list" class="table table-striped table-bordered table-hover table-condensed">
+                <thead>
+                    <tr>
+                        <th scope="col"  class="from_user-column sortable column-from_user">
+                            <div class="text">
+                                发送者
+                            </div>
+                        </th>
+                        <th scope="col"  class="title-column sortable column-title">
+                            <div class="text">
+                                标题
+                            </div>
+                        </th>
+                        <th scope="col"  class="create_time-column sortable column-create_time sorted descending">
+                            <div class="text">
+                                发布时间
+                            </div>
+                        </th>
+                        <th scope="col"  class="is_readed-column sortable column-is_readed">
+                            <div class="text">
+                                是否阅读
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                     {% for notification in notifications%}
+                     <tr class="row-notification">
+                         <th class="field-from_user nowrap">{{ notification.message_text.from_user }}</th>
+                         <th class="field-title"><a class="view-notification" href="javascript:void(0);" value="{{notification.id}}" style="color: #549dee">
+                             {{ notification.message_text.title }}
+                            </a></th>
+                         <td class="field-create_time nowrap">{{ notification.message_text.create_time|date:"Y-m-d H:m:s" }}</td>
+                         <td class="field-is_readed nowrap">
+                            {% if notification.is_read%}
+                                <span class="label label-info pull-left">已读</span>
+                            {% else %}
+                                <span class="label label-warning pull-left">未读</span>
+                            {% endif %}
+                         </td>
+                     </tr>
+                     {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script language="javascript" type="text/javascript">
+    $.ajaxSetup({
+            data: {csrfmiddlewaretoken:'{{ csrf_token }}'},
+        });
+    $('.view-notification').click(function(){
+        $.ajax({
+            type: "POST",
+            url: "/user/notification",
+            data: {"notification_id":$(this).attr("value")},
+            dataType: 'json',
+            success:function(data,textStatus){
+                var html1= "<li id=\"notification-text-tab\">"+
+                        "<a href=\"#notification-text\" data-toggle=\"tab\">"+
+                        "消息详情"+"</a>"+"</li>";
+                var html2="<div class=\"tab-pane fade\" id=\"notification-text\">"+
+                        "<div class=\"panel panel-danger\">"+
+                        "<div class=\"panel-heading\">"+ "<h3 class=\"panel-title\">"+ data.title +"</h3>"+"</div>"+
+                        "<div class=\"panel-body\">"+data.context+"</div>"+"</div>" +
+                        "</div>" ;
+                $('#myTab').append(html1);
+                $('#myTabContent').append(html2);
+                $('#myTab li:eq(1) a').tab('show');
+            },
+            error:function(XMLHttpRequest, textStatus, errorThrown){
+                alert(XMLHttpRequest.responseText);
+            }
+
+        });
+        return false;
+    });
+
+{#    #点击返回消息通知按钮，关闭详细消息tab#}
+    $('.notification-title-tab').click(function(){
+{#        //删除<li>标签#}
+        $('#notification-text-tab').remove();
+        $('#notification-text').remove();
+    });
+
+</script>

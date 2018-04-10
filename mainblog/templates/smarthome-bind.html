@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block headtitle %}
+  智能家居
+{% endblock %}
+
+ {% block submitscript %}
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/rollups/aes.js' %}"></script> <!--aes加解密-->
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/enc-base64.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/mode-ecb.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/pad-zeropadding.js' %}"></script>
+     <script src="{% static 'blog/js/smarthome/utils.js' %}"></script>
+     <script type="text/javascript">
+     </script>
+ {% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div id="vmaig-content" class="col-md-8 col-lg-9">
+             <!-- 首页文章列表 -->
+            <div id="home-post-list">
+                <!--返回按键-->
+                <div class="back left" style="height: 80px;width:100%;background-color: cyan">
+                    <img src="{% static 'blog/img/smarthome/back.png' %}" onclick="back_click()" style="margin-left: 20px;margin-top:20px;width: 40px;height: 40px">
+                </div>
+                <!--未绑定设备显示-->
+                <div class="device-bind" style="height:300px;width:100%;">
+                    <!--设备分类图标-->
+                    <ul style="list-style-type:none" >
+                        <li class="gateway" style="margin-left: -50px;">
+                            <div class="gateway_icon" style="height: 100px;">
+                                 <img src="{% static 'blog/img/smarthome/shouye_shineiji_s.png' %}" style="float: left;margin-left: 20px;margin-top:10px;width: 80px;height: 80px">
+                                 <span style="line-height:100px;font-size: 15px;">室内机</span>
+                            </div>
+                            <ul class="gateway-device" style="list-style-type:none">
+
+                            </ul>
+                        </li>
+
+                        <li class="zigbee" style="margin-left: -50px;">
+                             <div class="zigbee_icon" style="height: 100px;">
+                                 <img src="{% static 'blog/img/smarthome/shouye_xietiaoqi_s.png' %}" style="float: left;margin-left: 20px;margin-top:10px;width: 80px;height: 80px">
+                                 <span style="line-height:100px;font-size: 15px;">网关</span>
+                             </div>
+                             <ul class="zigbee-device" style="list-style-type:none">
+{#                                <li style="margin-left: 20px;">#}
+{#                                    <div class="device-text" style="float: left;width: 80%">#}
+{#                                        <span style="line-height:20px;font-size: 12px;">网关</span>#}
+{#                                    </div>#}
+{#                                    <div class="device-btn" style="width: 20%;float: right">#}
+{#                                        <button class="delete-btn" name="delete-device">删除#}
+{#                                            </button>#}
+{#                                         <button class="bind-btn" name="bind-device">绑定#}
+{#                                            </button>#}
+{#                                    </div>#}
+{#                                </li>#}
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script language="javascript" type="text/javascript">
+        window.onload = function()
+            {
+               $.ajax({
+                type:"POST",
+                url:"/smarthome/update/getunhandlefriend",
+                data:{"token":window.localStorage["text"]},
+                dataType:'json',
+                success:function(data,textStatus){
+                    //console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        if(data["result"]!=""){
+                            var result = JSON.parse(data["result"]);
+                            console.log("get_unhandle_friend");
+                            console.log(result);
+                            var devs_array=result.usr;
+                            var html1="";
+                            var html2="";
+                            for(var i=0;i<devs_array.length;i++){
+                                if(devs_array[i].type=="gateway"){
+                                    console.log(devs_array[i]);
+                                    var html="<li style=\"margin-left: 20px;\">"+
+                                                "<div class=\"device-text\" style=\"float: left;width: 70%;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;\">"+
+                                                    "<span style=\"line-height:20px;font-size: 12px;\">"+devs_array[i].friend+"</span>"+
+                                                "</div>"+
+                                                "<div class=\"device-btn\" style=\"width: 30%;float: right\">"+
+                                                    "<button class=\"delete-btn\" onclick=\"delete_click(this)\" name=\""+devs_array[i].friend+"\">"+"删除"+
+                                                        "</button>"+
+                                                    "<button class=\"bind-btn\" typename=\"gateway\" onclick=\"bind_click(this)\" name=\""+devs_array[i].friend+"\">"+"绑定"+
+                                                        "</button>"+
+                                                "</div>"+
+                                            "</li>";
+                                    html1=html1+html;
+                                }
+                                if(devs_array[i].type=="zigbee"){
+                                    console.log(devs_array[i]);
+                                    var html="<li style=\"margin-left: 20px;\">"+
+                                                "<div class=\"device-text\" style=\"float: left;width: 70%;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;\">"+
+                                                    "<span style=\"line-height:20px;font-size: 12px;\">"+devs_array[i].friend+"</span>"+
+                                                "</div>"+
+                                                "<div class=\"device-btn\" style=\"width: 30%;float: right\">"+
+                                                    "<button class=\"delete-btn\" onclick=\"delete_click(this)\" name=\""+devs_array[i].friend+"\">"+"删除"+
+                                                        "</button>"+
+                                                    "<button class=\"bind-btn\" typename=\"zigbee\" onclick=\"bind_click(this)\" name=\""+devs_array[i].friend+"\">"+"绑定"+
+                                                        "</button>"+
+                                                "</div>"+
+                                            "</li>";
+                                    html2=html2+html;
+                                }
+
+                            }
+                            console.log(html1);
+                            console.log(html2);
+                            $(".gateway .gateway-device").append(html1);
+                            $(".zigbee .zigbee-device").append(html2);
+                        }
+                    }
+                    else{
+                        var html = "<div class=\"alert alert-danger\">";
+                        for (var key in errors){
+                            html += errors[key]+"<br/>";
+                        }
+                        html += "</div>";
+                        $("#home-post-list").after(html);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        function back_click(){
+            window.location.href='http://'+window.location.host+'/smarthome/';
+        }
+
+        function delete_click(obj){
+            console.log($(obj).attr("name"));
+            var win=confirm("是否删除？");
+            if(win==true) {
+                $.ajax({
+                    type: "POST",
+                    url: "/smarthome/update/delfriend",
+                    data: {
+                        "token": window.localStorage["text"],
+                        "mac": $(obj).attr("name")
+                    },
+                    dataType: 'json',
+                    success: function (data, textStatus) {
+                        console.log(data);
+                        var errors = data["errors"];
+                        if (errors.length == 0) {
+                            if (data["result"] != "") {
+                                var result = JSON.parse(data["result"]);
+                                if(result.result==="success"){
+                                     window.location.href='http://'+window.location.host+'/smarthome/';
+                                }
+                            }
+                        }
+                        else {
+                            var html = "<div class=\"alert alert-danger\">";
+                            for (var key in errors) {
+                                html += errors[key] + "<br/>";
+                            }
+                            html += "</div>";
+                            $("#home-post-list").after(html);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.responseText);
+                    }
+
+                });
+            }
+            else{
+                console.log("取消");
+            }
+        }
+
+        function bind_click(obj){
+            console.log($(obj).attr("name"));
+            console.log($(obj).attr("typename"));
+            var win=prompt("请输入名字：");
+            if(win!=null && win!=""){
+                $.ajax({
+                    type:"POST",
+                    url:"/smarthome/update/addfriend",
+                    data:{
+                        "token":window.localStorage["text"],
+                        "mac":$(obj).attr("name"),
+                        "friend_name":win,
+                        "type":$(obj).attr("typename")
+                    },
+                    dataType:'json',
+                    success:function(data,textStatus){
+                        //console.log(data);
+                        var errors = data["errors"];
+                        if(errors.length==0){
+                            if(data["result"]!=""){
+                                var result = JSON.parse(data["result"]);
+                                if(result.result==="success"){
+                                     window.location.href='http://'+window.location.host+'/smarthome/';
+                                }
+                            }
+                        }
+                        else{
+                            var html = "<div class=\"alert alert-danger\">";
+                            for (var key in errors){
+                                html += errors[key]+"<br/>";
+                            }
+                            html += "</div>";
+                            $("#home-post-list").after(html);
+                        }
+                      },
+                    error:function(XMLHttpRequest, textStatus, errorThrown){
+                        alert(XMLHttpRequest.responseText);
+                    }
+
+                });
+            }
+
+        }
+
+
+    </script>
+{% endblock %}

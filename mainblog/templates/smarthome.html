@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block headtitle %}
+  智能家居
+{% endblock %}
+
+ {% block submitscript %}
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/rollups/aes.js' %}"></script> <!--aes加解密-->
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/enc-base64.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/mode-ecb.js' %}"></script>
+     <script src="{% static 'blog/js/CryptoJS-v3.1.2/components/pad-zeropadding.js' %}"></script>
+     <script src="{% static 'blog/js/smarthome/utils.js' %}"></script>
+     <script type="text/javascript">
+     </script>
+ {% endblock %}
+
+{% block main %}
+    <div class="row">
+        <div id="vmaig-content" class="col-md-8 col-lg-9">
+             <!-- 首页文章列表 -->
+            <div id="home-post-list">
+                <!--首页用户和添加设备入口-->
+                <div class="shouye-main" style="height: 100px;width:100%;background-color: cyan;">
+                    <!--左边用户-->
+                    <div class="dropdown user-left" style="height: 100px;width:40%;float:left;">
+                         <div class="user_icon" id="dropdownmenu_user" data-toggle="dropdown" style="height: 100px;">
+                             <img src="{% static 'blog/img/smarthome/shouye_user.png' %}" style="float: left;margin-left: 20px;margin-top:20px;width: 40px;height: 40px">
+                             <div id="user_name_num" style="height:22px;line-height:22px;position:absolute;width:100%;margin-top:60px;margin-left: 5px">
+
+                             </div>
+                         </div>
+
+                         <ul class="dropdown-menu pull-left" role="menu" aria-labelledby="dropdownmenu_user" style="background-image:url({% static 'blog/img/smarthome/safety_bj.9.png' %});background-repeat: no-repeat;background-position: center;
+                                 background-size:100% 100%;-moz-background-size:100% 100%;background-color:transparent;border:0px;padding:20px 0">
+                            <li>
+                                <a href="javascript:void(0);" onclick="logout_click(this)" name="home">
+                                    <img src="{% static 'blog/img/smarthome/shouye_user.png' %}" style="width: 30px;height: 30px">
+                                    &nbsp;&nbsp;&nbsp;退出登录
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <!--右边添加设备入口-->
+                    <div class="add-device right" style="width:40%;float:right">
+                        <img src="{% static 'blog/img/smarthome/shouye_add.png' %}" onclick="add_device_click()" style="float:right;margin-right: 20px;margin-top:20px;width: 40px;height: 40px">
+                    </div>
+
+                </div>
+
+                <!-- 首页轮播 -->
+                <div id="myCarousel" class="carousel slide" style="background:cyan;width:100%;">
+                    <!-- 轮播（Carousel）指标 -->
+                    <ol class="carousel-indicators">
+                    </ol>
+                    <!-- 轮播（Carousel）项目 -->
+                    <div class="carousel-inner">
+                    </div>
+                    <!-- 轮播（Carousel）导航 -->
+                    <a class="carousel-control left" href="#myCarousel"
+                        data-slide="prev">&lsaquo;
+                    </a>
+                    <a class="carousel-control right" href="#myCarousel"
+                        data-slide="next">&rsaquo;
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <script language="javascript" type="text/javascript">
+        window.onload = function(){
+            var user_h= window.localStorage["user"];
+            $('#user_name_num').append(user_h);
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/getfriends",
+                data:{"token":window.localStorage["text"]},
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        if(data["result"]!=""){
+                            var result = JSON.parse(data["result"]);
+                            var devs_array=result.usr;
+                            var html1="";
+                            var html2="";
+                            var count=0;
+                            var flag=true;//第一个活动页面
+                            for(var i=0;i<devs_array.length;i++){
+                                if(devs_array[i].type=="gateway"){
+                                    console.log(devs_array[i]);
+                                    if(flag){
+                                        var html="<div class=\"item active\">"+ "<img src=\"{% static 'blog/img/smarthome/shouye_shineiji.png' %}\" alt=\""+devs_array[i].friend+"\" onclick=\"img_click(this)\">"+ "<div class=\"carousel-caption\">"+devs_array[i].friend_name+"</div>"+"</div>";
+                                        flag=false;
+                                    }
+                                    else{
+                                        var html="<div class=\"item\">"+ "<img src=\"{% static 'blog/img/smarthome/shouye_shineiji.png' %}\" alt=\""+devs_array[i].friend+"\" onclick=\"img_click(this)\">"+ "<div class=\"carousel-caption\">"+devs_array[i].friend_name+"</div>"+"</div>";
+                                    }
+
+                                    html2=html2+html;
+                                    count=count+1;
+                                }
+                                if(devs_array[i].type=="coordin_zigbee"){
+                                    console.log(devs_array[i]);
+                                    if(flag){
+                                        var html="<div class=\"item active\">"+ "<img src=\"{% static 'blog/img/smarthome/shouye_xietiaoqi.png' %}\" alt=\""+devs_array[i].friend+"\" onclick=\"img_click(this)\">"+ "<div class=\"carousel-caption\">"+devs_array[i].friend_name+"</div>"+"</div>";
+                                        flag=false;
+                                    }
+                                    else{
+                                        var html="<div class=\"item\">"+ "<img src=\"{% static 'blog/img/smarthome/shouye_xietiaoqi.png' %}\" alt=\""+devs_array[i].friend+"\" onclick=\"img_click(this)\">"+ "<div class=\"carousel-caption\">"+devs_array[i].friend_name+"</div>"+"</div>";
+                                    }
+
+                                    html2=html2+html;
+                                    count=count+1;
+                                }
+
+                            }
+                            //轮播指标
+                            for(var i=0;i<=count;i++){
+                                if(i==0){
+                                    var html="<li data-target=\"#myCarousel\" data-slide-to=\""+i+"\" class=\"active\">"+"</li>";
+                                }
+                                else{
+                                    var html="<li data-target=\"#myCarousel\" data-slide-to=\""+i+"\">"+"</li>";
+                                }
+                                html1=html1+html;
+                            }
+                            console.log(html1);
+                            console.log(html2);
+                            $("#myCarousel .carousel-indicators").append(html1);
+                            $("#myCarousel .carousel-inner").append(html2);
+                            $("#myCarousel").carousel('cycle');
+                        }
+                    }
+                    else{
+                        var html = "<div class=\"alert alert-danger\">";
+                        for (var key in errors){
+                            html += errors[key]+"<br/>";
+                        }
+                        html += "</div>";
+                        $("#home-post-list .user-devices-list").after(html);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        function logout_click(obj){
+            console.log("logout-post");
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/logout",
+                data:{
+                    "token":window.localStorage["text"]
+                },
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    var result=data["result"];
+                    if(errors.length==0){
+                        console.log(data["result"]);
+                        if(result!=""){
+                            var res=JSON.parse(result);
+                            if(res.result=="success"){
+                                window.location.href='http://'+window.location.host+'/smarthome/login/';
+                            }
+                            else{
+                                alert("退出登录失败！");
+                            }
+                        }
+                        else{
+                            alert("退出登录失败！");
+                        }
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+
+        function add_device_click(){
+            window.location.href='http://'+window.location.host+'/smarthome/bind/';
+        }
+
+        function img_click(obj){
+            console.log($(obj).attr('alt'));
+            $.ajax({
+                type:"POST",
+                url:"/smarthome/update/getall",
+                data:{"token":window.localStorage["text"],"from_username":$(obj).attr('alt'),"username":window.localStorage["user"]},
+                dataType:'json',
+                success:function(data,textStatus){
+                    console.log(data);
+                    var errors = data["errors"];
+                    if(errors.length==0){
+                        console.log("success");
+                        window.localStorage["mac"]=$(obj).attr('alt');
+                        window.location.href='http://'+window.location.host+'/smarthome/control/';
+                    }
+                    else{
+                        console.log(errors);
+                    }
+                },
+                error:function(XMLHttpRequest, textStatus, errorThrown){
+                    alert(XMLHttpRequest.responseText);
+                }
+
+            });
+        }
+    </script>
+{% endblock %}

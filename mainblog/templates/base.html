@@ -1,0 +1,44 @@
+{% load staticfiles%}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>
+            {% block headtitle %}
+            {% endblock %}
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- 引入 Bootstrap -->
+        <link rel="stylesheet" href="{% static 'blog/css/bootstrap.min.css' %}" type="text/css">
+        <link rel="stylesheet" href="{% static 'blog/css/bootstrap-theme.css' %}" type="text/css">
+        <link rel="stylesheet" href="{% static 'blog/css/vmaig.css' %}" type="text/css">
+        <link rel="stylesheet" href="{% static 'blog/css/jquery.Jcrop.min.css' %}" type="text/css">
+
+        <!-- 包括所有已编译的插件 -->
+        <script src="{% static 'blog/js/jquery-2.2.4.min.js'  %}"></script>
+        <script src="{% static 'blog/js/jquery.Jcrop.min.js' %}"></script> <!--图像裁剪-->
+        <script src="{% static 'blog/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'ckeditor/ckeditor/plugins/prism/lib/prism/prism_patched.min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
+        <script type="text/javascript" src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+
+        {% block css%} {% endblock%}
+        {% block submitscript %}
+        {% endblock %}
+    </head>
+    <body id="vmaig">
+        <!-- 导航栏 -->
+        {% include "nav.html"%}
+        <!-- 文章列表 与 侧边的东西 -->
+        <div id="vmaig-main">
+            <div d="vmaig-content" class="container">
+                {%block main%} {% endblock %}
+            </div>
+            <footer>
+               <!--底部栏-->
+                {% include "bottom.html" %}
+            </footer>
+        </div>
+    </body>
+</html>
+
