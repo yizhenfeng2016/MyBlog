@@ -6,6 +6,6 @@
 （4）提供了智能家居登录入口，登录后可以进行家电控制，测试家电控制的账号和密码，请发信息到我的qq邮箱
 
 项目可以直接部署在centos云服务器上，部署步骤请参考文章：http://www.cnblogs.com/yizhenfeng168/p/8529784.html
-本项目已提供自动部署的脚本代码：centospy.sh（centos系统python系统的搭建）、djangopy.sh（django项目所依赖的各种库的安装）、start.sh（项目启动脚本）
+本项目已提供自动部署的脚本代码：centospy.sh（centos系统python环境的搭建）、djangopy.sh（django项目所依赖的各种库的安装）、start.sh（项目启动脚本）
 
 
